@@ -19,93 +19,6 @@
 #include "simAVRHeader.h"
 #endif
 
-unsigned char x = 0x00;
-unsigned char out = 0x00;
-
-enum KEY_STATES{START, INIT} key_state;
-int keypadTick(int state){
-    x = GetKeypadKey();
-    switch(state){
-        case START:
-            state = INIT;
-            break;
-        case INIT:
-            state = INIT;
-            break;
-        default:
-            state = START;
-            break;
-    }
-
-    switch(state){
-        case START:
-            break;
-        case INIT:
-            switch(x){
-                case '0':
-                    out = 0x00;
-                    break;
-                case '1':
-                    out = 0x01;
-                    break;
-                case '2':
-                    out = 0x02;
-                    break;
-                case '3':
-                    out = 0x03;
-                    break;
-                case '4':
-                    out = 0x04;
-                    break;
-                case '5':
-                    out = 0x05;
-                    break;
-                case '6':
-                    out = 0x06;
-                    break;
-                case '7':
-                    out = 0x07;
-                    break;
-                case '8':
-                    out = 0x08;
-                    break;
-                case '9':
-                    out = 0x09;
-                    break;
-                case 'A':
-                    out = 0x0A;
-                    break;
-                case 'B':
-                    out = 0x0B;
-                    break;
-                case 'C':
-                    out = 0x0C;
-                    break;
-                case 'D':
-                    out = 0x0D;
-                    break;
-                case '*':
-                    out = 0x0E;
-                    break;
-                case '#':
-                    out = 0x0F;
-                    break;
-                case '\0':
-                    out = 0x1F;
-                    break;
-                default:
-                    out = 0x1B;
-                    break;
-            }
-            PORTB = out;
-            break;
-
-        default:
-            break;
-    }
-    return state;
-}
-
 unsigned char message[53] = "                CS120B is Legend... wait for it DARY!";
 unsigned int idx = 0;
 unsigned char display[16];
@@ -150,20 +63,15 @@ int main(void) {
     /* Insert your solution below */
     LCD_init();
 
-    static task task1, task2;
-    task *tasks[] = {&task1, &task2};
+    static task task1;
+    task *tasks[] = {&task1};
     const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
     const char start = 0;
     
     task1.state = start;
-    task1.period = 10;
+    task1.period = 30;
     task1.elapsedTime = task1.period;
-    task1.TickFct = &keypadTick;
-
-    task2.state = start;
-    task2.period = 30;
-    task2.elapsedTime = task2.period;
-    task2.TickFct = &LCDTick;
+    task1.TickFct = &LCDTick;
 
     unsigned long GCD = tasks[0]->period;
     for(int i = 0; i < numTasks; i++){
